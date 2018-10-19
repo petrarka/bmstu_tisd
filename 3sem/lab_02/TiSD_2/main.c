@@ -8,6 +8,14 @@ typedef enum { NATIVE, TRANSLATED } tech_literature;
 typedef enum { NOVEL, PIECE, POEM} art_literature;
 typedef enum { TALE, POETRY } child_literature;
 
+unsigned long long tick(void)
+{
+    unsigned long long d;
+    __asm__ __volatile__ ("rdtsc" : "=A" (d) );
+
+    return d;
+}
+
 ssize_t my_getline(char **lineptr, size_t *n, FILE *stream)
 {
 	if (ferror(stream) || feof(stream)) 
@@ -134,6 +142,7 @@ void print(struct Book *head)
 		i++;
 		if (head->kind == TECHNICAL)
 		{
+			printf("Technical\n");
 			printf("'%s' by %s\n", head->title, head->surname);
 			printf("Published by %s\n", head->publisher);
 			printf("%u pages\n", head->pages);
@@ -143,6 +152,7 @@ void print(struct Book *head)
 		}
 		else if (head->kind == ART)
 		{
+			printf("Art\n");
 			printf("'%s' by %s\n", head->title, head->surname);
 			printf("Published by %s\n", head->publisher);
 			printf("%d pages\n", head->pages);
@@ -155,6 +165,7 @@ void print(struct Book *head)
 		}
 		else if (head->kind == CHILDREN)
 		{
+			printf("Children\n");
 			printf("'%s' by %s\n", head->title, head->surname);
 			printf("Published by %s\n", head->publisher);
 			printf("%d pages\n", head->pages);
@@ -208,7 +219,6 @@ void load(struct Book **head, FILE *f)
 			
 			pword = strtok(NULL, ",");
 			int ye = atoi(pword);
-			printf("@@%d %d\n",langu, ye);
 			struct Book *node = create_new_book(s_name, titl, publ, kind, pages, dep, langu, ye, 0, 0);
 			*head = add_end(*head, node);
 			str = NULL;
@@ -376,14 +386,14 @@ int print_by_dep(struct Book *head)
 	return 0;
 }
 
-struct Book * sort( struct Book *root )
+struct Book * sort( struct Book *head )
 {
     struct Book *new_root = NULL;
-    while ( root != NULL )
+    while (head != NULL)
     {
-        struct Book *node = root;
-        root = root->next;
-        if ( new_root == NULL || node->pages < new_root->pages )
+        struct Book *node = head;
+        head = head->next;
+        if (new_root == NULL || node->pages < new_root->pages)
         {
             node->next = new_root;
             new_root = node;
@@ -391,7 +401,7 @@ struct Book * sort( struct Book *root )
         else
         {
             struct Book *current = new_root;
-            while ( current->next != NULL && !( node->pages < current->next->pages ) )
+            while (current->next != NULL && !(node->pages < current->next->pages))
                   current = current->next;
 
             node->next = current->next;
@@ -414,6 +424,123 @@ struct Book* clear( struct Book *node )
     return node;
 }
 
+struct Book *getTail(struct Book *cur) 
+{ 
+    while (cur != NULL && cur->next != NULL) 
+        cur = cur->next; 
+    return cur; 
+} 
+
+// Partitions the list taking the last element as the pivot 
+struct Book *partition(struct Book *head, struct Book *end, 
+                       struct Book **newHead, struct Book **newEnd) 
+{ 
+    struct Book *pivot = end; 
+    struct Book *prev = NULL, *cur = head, *tail = pivot; 
+  
+    // During partition, both the head and end of the list might change 
+    // which is updated in the newHead and newEnd variables 
+    while (cur != pivot) 
+    { 
+        if (cur->pages < pivot->pages) 
+        { 
+            // First node that has a value less than the pivot - becomes 
+            // the new head 
+            if ((*newHead) == NULL) 
+                (*newHead) = cur; 
+  
+            prev = cur;   
+            cur = cur->next; 
+        } 
+        else // If cur node is greater than pivot 
+        { 
+            // Move cur node to next of tail, and change tail 
+            if (prev) 
+                prev->next = cur->next; 
+            struct Book *tmp = cur->next; 
+            cur->next = NULL; 
+            tail->next = cur; 
+            tail = cur; 
+            cur = tmp; 
+        } 
+    } 
+  
+    // If the pivot data is the smallest element in the current list, 
+    // pivot becomes the head 
+    if ((*newHead) == NULL) 
+        (*newHead) = pivot; 
+  
+    // Update newEnd to the current last node 
+    (*newEnd) = tail; 
+  
+    // Return the pivot node 
+    return pivot; 
+} 
+  
+  
+//here the sorting happens exclusive of the end node 
+struct Book* quickSortRecur(struct Book *head, struct Book *end) 
+{ 
+    // base condition 
+    if (!head || head == end) 
+        return head; 
+  
+    struct Book *newHead = NULL, *newEnd = NULL; 
+  
+    // Partition the list, newHead and newEnd will be updated 
+    // by the partition function 
+    struct Book *pivot = partition(head, end, &newHead, &newEnd); 
+  
+    // If pivot is the smallest element - no need to recur for 
+    // the left part. 
+    if (newHead != pivot) 
+    { 
+        // Set the node before the pivot node as NULL 
+        struct Book *tmp = newHead; 
+        while (tmp->next != pivot) 
+            tmp = tmp->next; 
+        tmp->next = NULL; 
+  
+        // Recur for the list before pivot 
+        newHead = quickSortRecur(newHead, tmp); 
+  
+        // Change next of last node of the left half to pivot 
+        tmp = getTail(newHead); 
+        tmp->next =  pivot; 
+    } 
+  
+    // Recur for the list after the pivot element 
+    pivot->next = quickSortRecur(pivot->next, newEnd); 
+  
+    return newHead; 
+} 
+  
+// The main function for quick sort. This is a wrapper over recursive 
+// function quickSortRecur() 
+void quickSort(struct Book **headRef) 
+{ 
+    (*headRef) = quickSortRecur(*headRef, getTail(*headRef)); 
+    return; 
+} 
+
+void sortList(struct Book *head)
+{
+    struct Book *i, *j, *temp;
+
+    for (i = head; i != NULL ; i = i->next) // i = i->next
+    {
+        for (j = head->next; j != NULL; j = j->next) // j = j->next
+        {
+            if (head->pages < head->next->pages)
+            {
+                temp = head;
+                head = head->next;
+                head->next = temp;
+            }
+        }
+    }
+}
+
 int main(void)
 {
 	setbuf(stdout, NULL);
@@ -429,13 +556,14 @@ int main(void)
 		return -1;
 	int rc = 0;
 	int flag = 1;
-	int id;
+	int id, t1, t2, t12, t22;
 	while (flag == 1)
 	{
 		printf("\n1 - show table\n"
 		"2 - add element\n"
 		"3 - delete by id\n"
-		"4 - find by department\n"
+		"4 - buble sort\n"
+		"5 - qsort\n"
 		"0 - exit\n"
 		"Option: ");
 		int k;
@@ -486,10 +614,80 @@ int main(void)
 						return -1;
 					break;
 				case 4:
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
+					t1 = tick();
 					head = sort(head);
-					//print(head);
-					/*if (!print_by_dep(head))
-						return -1;*/
+					t2 = tick();
+					print(head);
+					printf("%d\n",(int)(t2-t1));
+					head = NULL;
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
+					break;
+				case 5:
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
+					t12 = tick();
+					quickSort(&head);
+					t22 = tick();
+					print(head);
+					printf("%d\n",(int)(t22-t12));
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
+					break;
+				case 6:
+					t1 = tick();
+					head = sort(head);
+					t2 = tick();
+					print(head);
+					head = NULL;
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
+					t12 = tick();
+					quickSort(&head);
+					t22 = tick();
+					print(head);
+					printf("bb %d\n",(int)(t2-t1));
+					printf("qs %d\n",(int)(t22-t12));
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
 					break;
 				case 0:
 					flag = 0;

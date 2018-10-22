@@ -138,7 +138,7 @@ void print(struct Book *head)
 	int i = 1;
     for ( ; head; head = head->next)
 	{
-		printf("Line #%d\n",i);
+		printf("ID #%d\n",i);
 		i++;
 		if (head->kind == TECHNICAL)
 		{
@@ -386,29 +386,93 @@ int print_by_dep(struct Book *head)
 	return 0;
 }
 
-struct Book * sort( struct Book *head )
-{
-    struct Book *new_root = NULL;
-    while (head != NULL)
-    {
-        struct Book *node = head;
-        head = head->next;
-        if (new_root == NULL || node->pages < new_root->pages)
-        {
-            node->next = new_root;
-            new_root = node;
-        }
-        else
-        {
-            struct Book *current = new_root;
-            while (current->next != NULL && !(node->pages < current->next->pages))
-                  current = current->next;
+void partition(struct Book *head, struct Book **front, struct Book **back){
 
-            node->next = current->next;
-            current->next = node;
+    struct Book* fast;
+    struct Book* slow;
+
+    if (head == NULL || head->next == NULL)
+	{
+
+        *front = head; // &a
+        *back = NULL; // &b
+
+    }else{
+
+        slow = head;
+        fast = head->next;
+
+        while(fast != NULL)
+		{
+
+            fast = fast->next;
+
+            if(fast != NULL)
+			{
+
+                slow = slow->next;
+                fast = fast->next;
+
+            }
+
         }
+
+        *front = head; // a
+        *back = slow->next; // b
+        slow->next = NULL;
+
     }
-    return new_root;
+
+}
+
+struct Book* mergeLists(struct Book *a, struct Book *b){
+
+    struct Book* mergedList = NULL;
+
+    if (a == NULL)
+	{
+        return b;
+    }
+	else if (b == NULL)
+	{
+        return a;
+    }
+
+    if (strcmp(a->title,b->title) < 0)
+	{
+        mergedList = a;
+        mergedList->next = mergeLists(a->next, b);
+    }
+	else
+	{
+        mergedList = b;
+        mergedList->next = mergeLists(a, b->next);
+    }
+
+    return mergedList;
+
+}
+
+void mergeSort(struct Book **source){
+
+    struct Book* head = *source;
+    struct Book* a = NULL;
+    struct Book* b = NULL;
+
+    if(head == NULL || head->next == NULL)
+	{
+
+        return;
+
+    }
+
+    partition(head, &a, &b);
+
+    mergeSort(&a);
+    mergeSort(&b);
+
+    *source = mergeLists(a, b);
+
 }
 
 struct Book* clear( struct Book *node )
@@ -424,146 +488,56 @@ struct Book* clear( struct Book *node )
     return node;
 }
 
-struct Book *getTail(struct Book *cur) 
-{ 
-    while (cur != NULL && cur->next != NULL) 
-        cur = cur->next; 
-    return cur; 
-} 
-
-// Partitions the list taking the last element as the pivot 
-struct Book *partition(struct Book *head, struct Book *end, 
-                       struct Book **newHead, struct Book **newEnd) 
-{ 
-    struct Book *pivot = end; 
-    struct Book *prev = NULL, *cur = head, *tail = pivot; 
-  
-    // During partition, both the head and end of the list might change 
-    // which is updated in the newHead and newEnd variables 
-    while (cur != pivot) 
-    { 
-        if (cur->pages < pivot->pages) 
-        { 
-            // First node that has a value less than the pivot - becomes 
-            // the new head 
-            if ((*newHead) == NULL) 
-                (*newHead) = cur; 
-  
-            prev = cur;   
-            cur = cur->next; 
-        } 
-        else // If cur node is greater than pivot 
-        { 
-            // Move cur node to next of tail, and change tail 
-            if (prev) 
-                prev->next = cur->next; 
-            struct Book *tmp = cur->next; 
-            cur->next = NULL; 
-            tail->next = cur; 
-            tail = cur; 
-            cur = tmp; 
-        } 
-    } 
-  
-    // If the pivot data is the smallest element in the current list, 
-    // pivot becomes the head 
-    if ((*newHead) == NULL) 
-        (*newHead) = pivot; 
-  
-    // Update newEnd to the current last node 
-    (*newEnd) = tail; 
-  
-    // Return the pivot node 
-    return pivot; 
-} 
-  
-  
-//here the sorting happens exclusive of the end node 
-struct Book* quickSortRecur(struct Book *head, struct Book *end) 
-{ 
-    // base condition 
-    if (!head || head == end) 
-        return head; 
-  
-    struct Book *newHead = NULL, *newEnd = NULL; 
-  
-    // Partition the list, newHead and newEnd will be updated 
-    // by the partition function 
-    struct Book *pivot = partition(head, end, &newHead, &newEnd); 
-  
-    // If pivot is the smallest element - no need to recur for 
-    // the left part. 
-    if (newHead != pivot) 
-    { 
-        // Set the node before the pivot node as NULL 
-        struct Book *tmp = newHead; 
-        while (tmp->next != pivot) 
-            tmp = tmp->next; 
-        tmp->next = NULL; 
-  
-        // Recur for the list before pivot 
-        newHead = quickSortRecur(newHead, tmp); 
-  
-        // Change next of last node of the left half to pivot 
-        tmp = getTail(newHead); 
-        tmp->next =  pivot; 
-    } 
-  
-    // Recur for the list after the pivot element 
-    pivot->next = quickSortRecur(pivot->next, newEnd); 
-  
-    return newHead; 
-} 
-  
-// The main function for quick sort. This is a wrapper over recursive 
-// function quickSortRecur() 
-void quickSort(struct Book **headRef) 
-{ 
-    (*headRef) = quickSortRecur(*headRef, getTail(*headRef)); 
-    return; 
-} 
-
-void sortList(struct Book *head)
+void list_bubble_sort(struct Book **head) 
 {
-    struct Book *i, *j, *temp;
+    int flag = 0;
+    if (*head == NULL || (*head)->next == NULL) return;
 
-    for (i = head; i != NULL ; i = i->next) // i = i->next
-    {
-        for (j = head->next; j != NULL; j = j->next) // j = j->next
-        {
-            if (head->pages < head->next->pages)
-            {
-                temp = head;
-                head = head->next;
-                head->next = temp;
+    while (!flag) 
+	{
+        struct Book **prev = head;              
+        struct Book *node = *head;           
+        struct Book *new_root = (*head)->next;
+
+        flag = 1;
+
+        while (new_root) 
+		{
+            int cmp = strcmp(node->title, new_root->title);
+
+            if (cmp > 0) 
+			{
+                node->next = new_root->next;
+                new_root->next = node;
+                *prev = new_root;
+
+                flag = 0;
             }
+            prev = &node->next;
+            node = new_root;
+            new_root = new_root->next;
         }
     }
 }
 
 int main(void)
 {
+	long int sum_t = 0;
 	setbuf(stdout, NULL);
 	struct Book *head = NULL;
 	FILE *f;
-	f = fopen("bed.bin", "r+b");
-	if (f)
-	{
-		load(&head, f);
-		fclose(f);
-	}
-	else
-		return -1;
 	int rc = 0;
 	int flag = 1;
-	int id, t1, t2, t12, t22;
+	int id, t1, t2;//, t12, t22;
 	while (flag == 1)
 	{
 		printf("\n1 - show table\n"
 		"2 - add element\n"
 		"3 - delete by id\n"
 		"4 - buble sort\n"
-		"5 - qsort\n"
+		"5 - merge sort\n"
+		"6 - Time comparation\n"
+		"7 - Find native book by department\n"
 		"0 - exit\n"
 		"Option: ");
 		int k;
@@ -572,6 +546,15 @@ int main(void)
 			switch(k)
 			{
 				case 1:
+					head = NULL;
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
 					print(head);
 					break;
 				case 2:
@@ -598,6 +581,15 @@ int main(void)
 					break;
 				case 3:
 					printf("Enter line number: ");
+					head = NULL;
+					f = fopen("bed.bin", "r+b");
+					if (f)
+					{
+						load(&head, f);
+						fclose(f);
+					}
+					else
+						return -1;
 					if (scanf("%d",&id) == 1)
 					{
 						delet_by_id(head, id);
@@ -614,19 +606,6 @@ int main(void)
 						return -1;
 					break;
 				case 4:
-					f = fopen("bed.bin", "r+b");
-					if (f)
-					{
-						load(&head, f);
-						fclose(f);
-					}
-					else
-						return -1;
-					t1 = tick();
-					head = sort(head);
-					t2 = tick();
-					print(head);
-					printf("%d\n",(int)(t2-t1));
 					head = NULL;
 					f = fopen("bed.bin", "r+b");
 					if (f)
@@ -636,21 +615,10 @@ int main(void)
 					}
 					else
 						return -1;
-					break;
-				case 5:
-					f = fopen("bed.bin", "r+b");
-					if (f)
-					{
-						load(&head, f);
-						fclose(f);
-					}
-					else
-						return -1;
-					t12 = tick();
-					quickSort(&head);
-					t22 = tick();
+					list_bubble_sort(&head);
 					print(head);
-					printf("%d\n",(int)(t22-t12));
+				case 5:
+					head = NULL;
 					f = fopen("bed.bin", "r+b");
 					if (f)
 					{
@@ -659,35 +627,49 @@ int main(void)
 					}
 					else
 						return -1;
+					mergeSort(&head);
+					print(head);
 					break;
 				case 6:
-					t1 = tick();
-					head = sort(head);
-					t2 = tick();
-					print(head);
-					head = NULL;
-					f = fopen("bed.bin", "r+b");
-					if (f)
+					sum_t = 0;
+					for (int i = 0; i < 50; i++)
 					{
-						load(&head, f);
-						fclose(f);
+						head = NULL;
+						f = fopen("bed.bin", "r+b");
+						if (f)
+						{
+							load(&head, f);
+							fclose(f);
+						}
+						else
+							return -1;
+						t1 = tick();
+						list_bubble_sort(&head);
+						t2 = tick();
+						sum_t += (long int)(t2-t1);
 					}
-					else
-						return -1;
-					t12 = tick();
-					quickSort(&head);
-					t22 = tick();
-					print(head);
-					printf("bb %d\n",(int)(t2-t1));
-					printf("qs %d\n",(int)(t22-t12));
-					f = fopen("bed.bin", "r+b");
-					if (f)
+					printf("\nBubble sort: %ld\n",(long int)sum_t/50);
+					sum_t = 0;
+					for (int i = 0; i < 50; i++)
 					{
-						load(&head, f);
-						fclose(f);
+						head = NULL;
+						f = fopen("bed.bin", "r+b");
+						if (f)
+						{
+							load(&head, f);
+							fclose(f);
+						}
+						else
+							return -1;
+						t1 = tick();
+						mergeSort(&head);
+						t2 = tick();
+						sum_t += (long int)(t2-t1);
 					}
-					else
-						return -1;
+					printf("Merge sort: %ld\n",(long int)sum_t/50);
+					break;
+				case 7:
+					print_by_dep(head);
 					break;
 				case 0:
 					flag = 0;
@@ -700,57 +682,3 @@ int main(void)
 	}
 	return 0;
 }
-	/*int k = 1;
-	FILE *f;
-	f = fopen("bed.bin", "r+b");
-	if (f)
-	{
-		puts("YES");
-		load(&head, f);
-		fclose(f);
-		puts("YES");
-	}
-	else
-		return -1;
-	if (scanf("%d",&k) == 1)
-	{
-		switch(k)
-		{
-			case 1:
-				print(head);
-				break;
-			case 2:
-				rc = add_el(&head);
-				if (rc != 0)
-					return -1;
-				break;
-			case 3:
-				if (rc == 0)
-				{
-					f = fopen("bed.bin", "w + b");
-					if (f)
-					{
-						save(head, f);
-						printf("Saved");
-					}
-					else
-						return -1;
-				}
-				break;
-	}
-	}*/
-	/*
-	rc = add_el(&head);
-	printf("__%d\n",rc);
-	print(head);
-	if (rc == 0)
-	{
-		f = fopen("bed.bin", "w + b");
-		if (f)
-		{
-			save(head, f);
-			print(head);
-		}
-		else
-			return -1;
-	}*/

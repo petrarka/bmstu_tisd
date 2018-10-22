@@ -6,3 +6,6 @@ main.o: main.c
 	
 app.exe: main.o 
 	$(CC) -o app.exe main.o
+	
+clean:
+	rm *.o *.exe

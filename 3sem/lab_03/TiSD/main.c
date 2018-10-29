@@ -107,15 +107,14 @@ void partition(int **matr, int n, int m, int *A, int *IA, int *JA, int *k)
             s++;
         }
     }
-    JA[n] = *k ? (*k) : 0;
-    for (int i = 1; i < n-1; i++)
+    for (int i = 1; i < m; i++)
     {
         if (JA[i] == -1)
             JA[i] = JA[i-1];
     }
 	if (JA[0] == -1)
-		JA[0] = JA[1];
-
+		JA[0] = 0;
+	JA[m] = *k ? (*k) : 0;
 }
 
 int multiply_matrix(int *JA, int *IA, int *A, int n, int **arr, int *res)
@@ -129,6 +128,28 @@ int multiply_matrix(int *JA, int *IA, int *A, int n, int **arr, int *res)
 	return 0;
 }
 
+void partition_vect(int *res, int m, int *A, int *IA, int *JA, int *k)
+{
+	*k = 0;
+    for(int i = 0; i < m; i++)
+    {
+        if (res[i])
+        {
+            A[*k] = res[i];
+            IA[*k] = 0;
+            JA[i] = *k;
+            *k += 1;
+        }
+		else
+			JA[i] = -1;
+    }
+    for (int i = 1; i < m; i++)
+		if (JA[i] == -1)
+			JA[i] = JA[i-1];
+	if (JA[0] == -1)
+		JA[0] = 0;
+	JA[m] = *k ? (*k) : 0;
+}
 int multiplication(int **matr1, int **matr2, int *res, int n, int m, int m1)
 {
 
@@ -151,13 +172,23 @@ int main(void)
 	int percentage;
 	printf("Len of vector: ");
 	if (scanf("%d", &m1) != 1)
+	{
+		puts("Wrong input");
 		return -1;
+	}
 	printf("N, M for matrix: ");
     if (scanf("%d %d", &n, &m) != 2)
+	{
+		puts("Wrong input");
 		return -1;
-	if (m != m1)
+	}
+	if (n != m1)
+	{
+		puts("Wrong input");
 		return -1;
+	}
 	int A[n*m], IA[n*m], JA[m+1];
+	int A1[m], IA1[m], JA1[m+1];
     int **matr = allocate_matrix(n, m);
 	int **vect = allocate_matrix(1, m1);
 	int *res = malloc(m * sizeof(int));
@@ -168,18 +199,33 @@ int main(void)
 		"2 - fill auto\n"
 		"3 - time");
 		if (scanf("%d",&l) != 1)
+		{
+			puts("Wrong input");
 			return -1;
+		}
 		switch(l)
 		{
 			case 1:
 				if (hand_fill(vect, 1, m1) == 0)
+				{
+					puts("Vector");
 					print_matrix(vect, 1, m1);
+				}
 				else
-					return -1;
+					{
+						puts("Wrong input");
+						return -1;
+					}
 				if (hand_fill(matr, n, m) == 0)
+				{
+					puts("Matrix");
 					print_matrix(matr, n, m);
+				}
 				else
-					return -1;
+					{
+						puts("Wrong input");
+						return -1;
+					}
 				partition(matr, n, m, A, IA, JA, &k);
 				printf(" A: ");
 				for (int i = 0; i < k; i++)
@@ -189,24 +235,44 @@ int main(void)
 				for (int i = 0; i < k; i++)
 					printf("%d ",IA[i]);
 				puts("");
-				printf("JA:");
-				for (int i = 0; i < n+1; i++)
+				printf("JA: ");
+				for (int i = 0; i < m+1; i++)
 					printf("%d ",JA[i]);
-				multiply_matrix(JA, IA, A, n, vect, res);
-				puts("\n______");
-				for (int i = 0; i < n; i ++)
-					printf("%d ", res[i]);
+				multiply_matrix(JA, IA, A, m, vect, res);
+				if (m1 < 10)
+					for (int i = 0; i < m; i ++)
+						printf("%d ", res[i]);
+				puts("");
+				partition_vect(res, m, A1, IA1, JA1, &k);
+				printf(" A: ");
+				for (int i = 0; i < k; i++)
+					printf("%d ",A1[i]);
+				puts("");
+				printf("IA: ");
+				for (int i = 0; i < k; i++)
+					printf("%d ",IA1[i]);
+				puts("");
+				printf("JA: ");
+				for (int i = 0; i < m+1; i++)
+					printf("%d ",JA1[i]);
+				puts("\nResult");
+				puts("");
 				break;
 			case 2:
 				printf("Percentage: ");
 				if (scanf("%d", &percentage) != 1)
-					return -1;
+					{
+						puts("Wrong input");
+						return -1;
+					}
 				auto_fill(matr, n, m, percentage);
 				auto_fill(vect, 1, m1, percentage);
+				puts("Vector");
 				print_matrix(vect, 1, m1);
+				puts("Matrix");
 				print_matrix(matr, n, m);
 				partition(matr, n, m, A, IA, JA, &k);
-				printf("A: ");
+				printf(" A: ");
 				for (int i = 0; i < k; i++)
 					printf("%d ",A[i]);
 				puts("");
@@ -215,31 +281,48 @@ int main(void)
 					printf("%d ",IA[i]);
 				puts("");
 				printf("JA: ");
-				for (int i = 0; i < n; i++)
-					printf("%d ",JA[i] );
-				printf("%d\n",JA[n]);
-				multiply_matrix(JA, IA, A, n, vect, res);
-				puts("______");
-				for (int i = 0; i < n; i ++)
-					printf("%d ", res[i]);
+				for (int i = 0; i < m+1; i++)
+					printf("%d ",JA[i]);
+				multiply_matrix(JA, IA, A, m, vect, res);
+				partition_vect(res, m, A1, IA1, JA1, &k);
+				if (m1 < 10)
+					for (int i = 0; i < m; i ++)
+						printf("%d ", res[i]);
+				puts("");
+				printf(" A: ");
+				for (int i = 0; i < k; i++)
+					printf("%d ",A1[i]);
+				puts("");
+				printf("IA: ");
+				for (int i = 0; i < k; i++)
+					printf("%d ",IA1[i]);
+				puts("");
+				printf("JA: ");
+				for (int i = 0; i < m+1; i++)
+					printf("%d ",JA1[i]);
+				puts("\n\nResult");
+				puts("");
 				break;
 				
 			case 3:
 				printf("Percentage: ");
 				if (scanf("%d", &percentage) != 1)
-					return -1;
-				for (int i = 0; i < 50; i ++)
+					{
+						puts("Wrong input");
+						return -1;
+					}
+				for (int i = 0; i < 1; i ++)
 				{
 					auto_fill(matr, n, m, percentage);
 					auto_fill(vect, 1, m1, percentage);
 					partition(matr, n, m, A, IA, JA, &k);
 					t1 = tick();
-					multiply_matrix(JA, IA, A, n, vect, res);
+					multiply_matrix(JA, IA, A, m, vect, res);
 					t2 = tick();
 					s1_time += (t2 - t1);
 				}
 				printf("Time: %ld\n", (long int)(s1_time/50));
-				for (int i = 0; i < 50; i ++)
+				for (int i = 0; i < 1; i ++)
 				{
 					auto_fill(matr, n, m, percentage);
 					auto_fill(vect, 1, m1, percentage);

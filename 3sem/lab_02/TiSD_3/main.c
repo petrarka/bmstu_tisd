@@ -250,11 +250,11 @@ int add_el(struct Book *head)
 {
 	int year, g, k;
 	unsigned int pages;
-	char *sex = malloc(21), *surname = malloc(50), *title = malloc(50), *publisher = malloc(50), *department = malloc(50);
+	char *s = malloc(21), *surname = malloc(50), *title = malloc(50), *publisher = malloc(50), *department = malloc(50);
 	if (surname == NULL || title == NULL || publisher == NULL || department == NULL)
 		return -1;
-	gets(sex);
-	free(sex);
+	gets(s);
+	free(s);
 	printf("Surname of author: ");
 	if (!gets(surname))
 		return -1;
@@ -272,10 +272,10 @@ int add_el(struct Book *head)
 		return -1;
 	if (k == TECHNICAL)
 	{
-		char *sex = malloc(21);
-		gets(sex);
+		char *s = malloc(21);
+		gets(s);
 		printf("Department: ");
-		free(sex);
+		free(s);
 		if (!gets(department))
 			return -1;
 		printf("Language (0-native, 1 - translated): ");
@@ -356,14 +356,15 @@ struct Book* delet_by_id(struct Book *head, int id)
 
 int print_by_dep(struct Book *head)
 {
-	char *dep = malloc(100), *sex = malloc(10);
+	char *dep = malloc(100), *s = malloc(10);
 	printf("Department: ");
-	gets(sex);
+	gets(s);
 	if(!gets(dep))
 		return -1;
 	int flag = 0;
 	int i = 1;
 	for ( ; head; head = head->next)
+	{
 		if (head->kind == TECHNICAL && strcmp(dep, head->type_literature.technical.department) == 0)
 		{
 			puts("");
@@ -375,8 +376,9 @@ int print_by_dep(struct Book *head)
 			printf("Department %s\n", head->type_literature.technical.department);
 			printf("Language %s\n", head->type_literature.technical.lang == 1 ? "native" : "translated");
 			printf("Year: %d\n", head->type_literature.technical.year);
-			i++;
 		}
+		i++;
+	}
 	if (flag == 0)
 		puts("\nNone");
 	return 0;

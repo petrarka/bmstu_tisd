@@ -3,6 +3,15 @@
 #include <time.h>
 #define N_RAND 100
 
+// Info
+void info(void)
+{
+	puts("This programm can multiply row-vector by matrix\n"
+	"You can fill matrix by yourself or by computer\n"
+	"Also you can compare two methods of multiplication");
+}
+
+// Измерение времени
 unsigned long long tick(void)
 {
     unsigned long long d;
@@ -11,6 +20,7 @@ unsigned long long tick(void)
     return d;
 }
 
+// Создание матрицы
 int **allocate_matrix(int n, int m)
 {
     if (n <= 0 || m <= 0)
@@ -32,12 +42,14 @@ int **allocate_matrix(int n, int m)
     return ptrs;
 }
 
+// Освобождение матрицы
 void free_matrix(int **ptrs, int n)
 {
     free(ptrs[0]);
     free(ptrs);
 }
 
+// Вывод матрицы
 void print_matrix(int **p, int n, int m)
 {
     for (int i = 0; i < n; i ++)
@@ -49,6 +61,7 @@ void print_matrix(int **p, int n, int m)
     puts("");
 }
 
+// Автозаполнение
 void auto_fill(int **matr, int n, int m, int percentage)
 {
     int zeroes = (n * m) * percentage / 100;
@@ -67,6 +80,7 @@ void auto_fill(int **matr, int n, int m, int percentage)
     }
 }
 
+// Ручное заполнение
 int hand_fill(int **matr, int n, int m)
 {
     for (int i = 0; i < n; i ++)
@@ -79,6 +93,7 @@ int hand_fill(int **matr, int n, int m)
     return 0;
 }
 
+// Разбиение матрицы на 3 вектора
 void partition(int **matr, int n, int m, int *A, int *IA, int *JA, int *k)
 {
     *k = 0;
@@ -117,6 +132,7 @@ void partition(int **matr, int n, int m, int *A, int *IA, int *JA, int *k)
 	JA[m] = *k ? (*k) : 0;
 }
 
+// Умножение вектора на матрицу особым методом
 int multiply_matrix(int *JA, int *IA, int *A, int n, int **arr, int *res)
 {
 	for (int i = 0; i < n; i ++)
@@ -128,6 +144,7 @@ int multiply_matrix(int *JA, int *IA, int *A, int n, int **arr, int *res)
 	return 0;
 }
 
+// Разбиение вектора на 3 массива
 void partition_vect(int *res, int m, int *A, int *IA, int *JA, int *k)
 {
 	*k = 0;
@@ -143,13 +160,15 @@ void partition_vect(int *res, int m, int *A, int *IA, int *JA, int *k)
 		else
 			JA[i] = -1;
     }
+	if (JA[0] == -1)
+		JA[0] = 0;
     for (int i = 1; i < m; i++)
 		if (JA[i] == -1)
 			JA[i] = JA[i-1];
-	if (JA[0] == -1)
-		JA[0] = 0;
 	JA[m] = *k ? (*k) : 0;
 }
+
+// Умножение вектора на матрицу обычным методом
 int multiplication(int **matr1, int **matr2, int *res, int n, int m, int m1)
 {
 
@@ -166,17 +185,18 @@ int multiplication(int **matr1, int **matr2, int *res, int n, int m, int m1)
 int main(void)
 {
     srand (time(NULL));
+	info();
     int n, m, m1, k, l;
 	long int t1, t2, s1_time = 0;
 	setbuf(stdout, NULL);
 	int percentage;
-	printf("Len of vector: ");
+	printf("\nLength of vector: ");
 	if (scanf("%d", &m1) != 1)
 	{
 		puts("Wrong input");
 		return -1;
 	}
-	printf("N, M for matrix: ");
+	printf("Rows (must be equal to length of vector) and columns for matrix\n N, M: ");
     if (scanf("%d %d", &n, &m) != 2)
 	{
 		puts("Wrong input");
@@ -194,10 +214,11 @@ int main(void)
 	int *res = malloc(m * sizeof(int));
     if (matr && vect)
     {
-		puts("Options:\n"
+		puts("Menu:\n"
 		"1 - fill by hand\n"
 		"2 - fill auto\n"
-		"3 - time");
+		"3 - time\n"
+		"Option: ");
 		if (scanf("%d",&l) != 1)
 		{
 			puts("Wrong input");
@@ -285,6 +306,8 @@ int main(void)
 					printf("%d ",JA[i]);
 				multiply_matrix(JA, IA, A, m, vect, res);
 				partition_vect(res, m, A1, IA1, JA1, &k);
+				puts("\n\nResult");
+				puts("");
 				if (m1 < 10)
 					for (int i = 0; i < m; i ++)
 						printf("%d ", res[i]);
@@ -300,8 +323,6 @@ int main(void)
 				printf("JA: ");
 				for (int i = 0; i < m+1; i++)
 					printf("%d ",JA1[i]);
-				puts("\n\nResult");
-				puts("");
 				break;
 				
 			case 3:

@@ -8,6 +8,16 @@ typedef enum { NATIVE, TRANSLATED } tech_literature;
 typedef enum { NOVEL, PIECE, POEM} art_literature;
 typedef enum { TALE, POETRY } child_literature;
 
+// Info
+void info(void)
+{
+	puts("This programm shows a table of books\n"
+	"You can add or delete element from this table\n"
+	"You can sort this table via bubble sort or merge sort and compare those sorts\n"
+	"You can also find native books by department");
+}
+
+// Измерение времени
 unsigned long long tick(void)
 {
     unsigned long long d;
@@ -16,6 +26,7 @@ unsigned long long tick(void)
     return d;
 }
 
+// Считывание строки из файла
 ssize_t my_getline(char **lineptr, size_t *n, FILE *stream)
 {
 	if (ferror(stream) || feof(stream)) 
@@ -60,6 +71,7 @@ ssize_t my_getline(char **lineptr, size_t *n, FILE *stream)
 	return *n;
 }
 
+// Структура
 struct Book
 {
 	char *surname;
@@ -90,6 +102,7 @@ struct Book
     } type_literature;
 };
 
+// Создание нового элемента списка
 struct Book *create_new_book(char *surname, char *title, char *publisher, key kind, unsigned int pages, char *department, tech_literature lang, int year,
 	art_literature genre0, child_literature genre1)
 {
@@ -116,6 +129,7 @@ struct Book *create_new_book(char *surname, char *title, char *publisher, key ki
 	return b;
 }
 
+// Добавление элемента в конец списка
 struct Book *add_end(struct Book *head, 
                                    struct Book *b)
 {
@@ -132,6 +146,7 @@ struct Book *add_end(struct Book *head,
     return head;
 }
 	
+// Печать всей таблицы
 void print(struct Book *head)
 {
 	puts("");
@@ -175,6 +190,7 @@ void print(struct Book *head)
 	}
 }
 
+// Сохранение в файл
 void save(struct Book *head, FILE *f)
 {
 	for ( ; head; head = head->next)
@@ -189,6 +205,7 @@ void save(struct Book *head, FILE *f)
 	}
 }
 
+// Загрузка из файла в список
 void load(struct Book **head, FILE *f)
 {
 	char *str = NULL;
@@ -246,6 +263,7 @@ void load(struct Book **head, FILE *f)
 	}
 }
 
+// Добавление нового элемента пользователем
 int add_el(struct Book *head)
 {
 	int year, g, k;
@@ -332,6 +350,7 @@ int add_el(struct Book *head)
 	return 0;
 }
 
+// Удаление элемента по его номеру
 struct Book* delet_by_id(struct Book *head, int id)
 {
 	int i = 1;
@@ -354,6 +373,7 @@ struct Book* delet_by_id(struct Book *head, int id)
 	return NULL;
 }
 
+// Печать элементов по отрасли
 int print_by_dep(struct Book *head)
 {
 	char *dep = malloc(100), *s = malloc(10);
@@ -384,6 +404,7 @@ int print_by_dep(struct Book *head)
 	return 0;
 }
 
+// Разделение списка пополам
 void partition(struct Book *head, struct Book **front, struct Book **back){
 
     struct Book* fast;
@@ -423,6 +444,7 @@ void partition(struct Book *head, struct Book **front, struct Book **back){
 
 }
 
+// Слияние списков
 struct Book* mergeLists(struct Book *a, struct Book *b){
 
     struct Book* mergedList = NULL;
@@ -451,6 +473,7 @@ struct Book* mergeLists(struct Book *a, struct Book *b){
 
 }
 
+// Сортировка слиянием
 void mergeSort(struct Book **source){
 
     struct Book* head = *source;
@@ -473,6 +496,7 @@ void mergeSort(struct Book **source){
 
 }
 
+// Очиска списка
 struct Book* clear( struct Book *node )
 {
     while ( node != NULL )
@@ -486,6 +510,7 @@ struct Book* clear( struct Book *node )
     return node;
 }
 
+// Сортировка списка пузырьком
 void list_bubble_sort(struct Book **head) 
 {
     int flag = 0;
@@ -518,10 +543,12 @@ void list_bubble_sort(struct Book **head)
     }
 }
 
+// Главная функция
 int main(void)
 {
 	long int sum_t = 0;
 	setbuf(stdout, NULL);
+	info();
 	struct Book *head = NULL;
 	FILE *f;
 	int rc = 0;
@@ -552,7 +579,10 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					print(head);
 					break;
 				case 2:
@@ -564,10 +594,16 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					rc = add_el(head);
 					if (rc != 0)
+					{
+						puts("Can't add element");
 						return -1;
+					}
 					f = fopen("bed.bin", "w+b");
 					if (f)
 					{
@@ -575,7 +611,10 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					break;
 				case 3:
 					printf("Enter line number: ");
@@ -587,7 +626,10 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					if (scanf("%d",&id) == 1)
 					{
 						delet_by_id(head, id);
@@ -599,10 +641,16 @@ int main(void)
 							fclose(f);
 						}
 						else
+						{
+							puts("Can't open the file");
 							return -1;
+						}
 					}
 					else
+					{
+						puts("Wrong input");
 						return -1;
+					}
 					break;
 				case 4:
 					head = NULL;
@@ -613,7 +661,10 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					list_bubble_sort(&head);
 					print(head);
 				case 5:
@@ -625,7 +676,10 @@ int main(void)
 						fclose(f);
 					}
 					else
+					{
+						puts("Can't open the file");
 						return -1;
+					}
 					mergeSort(&head);
 					print(head);
 					break;
@@ -641,7 +695,10 @@ int main(void)
 							fclose(f);
 						}
 						else
+						{
+							puts("Can't open the file");
 							return -1;
+						}
 						t1 = tick();
 						list_bubble_sort(&head);
 						t2 = tick();
@@ -659,7 +716,10 @@ int main(void)
 							fclose(f);
 						}
 						else
+						{
+							puts("Can't open the file");
 							return -1;
+						}
 						t1 = tick();
 						mergeSort(&head);
 						t2 = tick();
@@ -677,7 +737,10 @@ int main(void)
 			}
 		}
 		else
+		{
+			puts("Wrong input");
 			return -1;
+		}
 	}
 	return 0;
 }

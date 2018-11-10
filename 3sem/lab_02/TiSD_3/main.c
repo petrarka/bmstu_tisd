@@ -74,31 +74,32 @@ ssize_t my_getline(char **lineptr, size_t *n, FILE *stream)
 // Структура
 struct Book
 {
-	char *surname;
-	char *title;
-	char *publisher;
-	key kind;
-	unsigned int pages;
-	struct Book *next;
+	char *surname; // фамилия автора
+	char *title; // название книги
+	char *publisher; // издательство
+	key kind; // тип литературы
+	unsigned int pages; // количество страниц
+	struct Book *next; // указатель на следующий элемент списка
 	
+	// вариантная часть
     union
     {
         struct
 		{
-			char *department;
-			tech_literature lang;
-			int year;
-		} technical;
+			char *department; // отрасль
+			tech_literature lang; // переводная или отечественная 
+			int year; // год выпуска
+		} technical; // техническая литература
 		
 		struct
 		{
-			art_literature genre;
-		} art;
+			art_literature genre; // жанр
+		} art; // художественная литература
 		
 		struct
 		{
-			child_literature genre;
-		} children;
+			child_literature genre; // жанр
+		} children; // детская литература
     } type_literature;
 };
 

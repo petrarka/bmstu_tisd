@@ -551,6 +551,7 @@ int main(void)
 	setbuf(stdout, NULL);
 	info();
 	struct Book *head = NULL;
+	printf("%ld\n", (long int)sizeof(struct Book));
 	FILE *f;
 	int rc = 0;
 	int flag = 1;

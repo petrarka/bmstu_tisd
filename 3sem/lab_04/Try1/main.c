@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_LEN 100
+#define MAX_LEN 1
 typedef struct node Stack;
 
 struct node
@@ -9,6 +9,55 @@ struct node
     char data;
     Stack *next;
 };
+
+/*
+void clear (Stack *head)
+{
+    Stack *next;
+    for ( ; head; head = next)
+    {
+        next = head->next;
+        free(head);
+    }
+}
+
+Stack* create_new_element (char data)
+{
+    Stack *tmp = malloc(sizeof(Stack));
+    if (tmp)
+    {
+        tmp -> data = data;
+        tmp -> next = NULL;
+        return tmp;
+    }
+    else
+        return NULL;
+}
+
+Stack* add_front (Stack *head, Stack *element)
+{
+    element->next = head;
+    return element;
+}
+
+Stack* input_list(Stack *head)
+{
+    char s[MAX_LEN];
+    printf("Enter your string: ");
+    if (fgets(s,MAX_LEN,stdin) == NULL)
+        return NULL;
+    s[strlen(s)-1] = '\0';
+    puts(s);
+    for (int i = 0; i < strlen(s); i++)
+    {
+        Stack *tmp = create_new_element(s[i]);
+        if (tmp != NULL)
+            head = add_front(head, tmp);
+        else
+            return NULL;
+    }
+    return head;
+}
 
 int push_arr(char *stack, char **head, char elem)
 {
@@ -53,14 +102,37 @@ int print_arr(char *stack, char *head)
     return 0;
 }
 
-/*
-Проблема
-([)]
+int input_arr (char *stack, char **head)
+{
+    puts("SD");
+    char s[MAX_LEN];
+    printf("Enter your string: ");
+    if (fgets(s,MAX_LEN,stdin) == NULL)
+        return -1;
+    s[strlen(s) - 1] = '\0';
+    for(int i = 0; i < strlen(s); i ++)
+    {
+        if (push_arr(stack, head, s[i]) != 0)
+            return -1;
+    }
+    return 0;
+}
 
+void print_list(Stack *head)
+{
+    puts("");
+    for ( ; head; head = head->next)
+    {
+        printf("%c ", head->data);
+    }
+    puts("");
+}
 */
+
+
 int process(char *stack, char *head)
 {
-    if ((head-1) < stack)
+    if (head < stack)
     {
         puts("Stack is empty");
         return -1;
@@ -149,92 +221,65 @@ int process(char *stack, char *head)
     return 0;
 }
 
-int input_arr (char *stack, char **head)
+void print_arr(char *begin, char *cur)
 {
-    puts("SD");
-    char s[MAX_LEN];
-    printf("Enter your string: ");
-    if (fgets(s,MAX_LEN,stdin) == NULL)
-        return -1;
-    s[strlen(s) - 1] = '\0';
-    for(int i = 0; i < strlen(s); i ++)
+    while (cur >= begin)
     {
-        if (push_arr(stack, head, s[i]) != 0)
-            return -1;
+        printf("%c", *(cur-1));
+        cur --;
     }
+    puts("_");
+}
+
+int push_arr(char *begin, char *end, char **cur)
+{
+    char el;
+    printf("Enter characer: ");
+    el = fgetc(stdin);
+    *cur += 1;
+    if (*cur + 1 > end)
+    {
+        *cur = end;
+        puts("Stack is full");
+        return -1;
+    }
+    **cur = el;
+    gets(&el);
     return 0;
 }
 
-void print_list(Stack *head)
+int pop_arr(char *begin, char *end, char **cur)
 {
-    puts("");
-    for ( ; head; head = head->next)
+    if (*cur < begin)
     {
-        printf("%c ", head->data);
+        puts("Stack is empty");
+        return -1;
     }
-    puts("");
-}
-
-void clear (Stack *head)
-{
-    Stack *next;
-    for ( ; head; head = next)
-    {
-        next = head->next;
-        free(head);
-    }
-}
-
-Stack* create_new_element (char data)
-{
-    Stack *tmp = malloc(sizeof(Stack));
-    if (tmp)
-    {
-        tmp -> data = data;
-        tmp -> next = NULL;
-        return tmp;
-    }
-    else
-        return NULL;
-}
-
-Stack* add_front (Stack *head, Stack *element)
-{
-    element->next = head;
-    return element;
-}
-
-Stack* input_list(Stack *head)
-{
-    char s[MAX_LEN];
-    printf("Enter your string: ");
-    if (fgets(s,MAX_LEN,stdin) == NULL)
-        return NULL;
-    s[strlen(s)-1] = '\0';
-    puts(s);
-    for (int i = 0; i < strlen(s); i++)
-    {
-        Stack *tmp = create_new_element(s[i]);
-        if (tmp != NULL)
-            head = add_front(head, tmp);
-        else
-            return NULL;
-    }
-    return head;
+    *cur -= 1;
+    return 0;
 }
 
 int main (void)
 {
     setbuf(stdout, NULL);
-    //Stack *head = NULL;
-    //head = input_list(head);
-    //print_list(head);
     char stack_arr[MAX_LEN];
     char *arr_head = stack_arr;
+    char *cur = arr_head - 1;
+    char *arr_end = stack_arr + MAX_LEN;
+    printf("beg: %p \nend: %p \ncur: %p ___ %d\n", arr_head, arr_end, cur, (int)(arr_end - arr_head));
+    //print_arr(arr_head, cur);
+    push_arr(arr_head, arr_end, &cur);
+    printf("beg: %p \nend: %p \ncur: %p ___ %d\n", arr_head, arr_end, cur, (int)(arr_end - arr_head));
+    push_arr(arr_head, arr_end, &cur);
+    printf("beg: %p \nend: %p \ncur: %p ___ %d\n", arr_head, arr_end, cur, (int)(arr_end - arr_head));
+    print_arr(arr_head, arr_end);
+    puts("");
+    //process(arr_head, cur);
+    /*
     input_arr(stack_arr, &arr_head);
     print_arr(stack_arr, arr_head);
     process(stack_arr, arr_head);
-    /*push_arr(stack_arr, &arr_head, 's');
+    push_arr(stack_arr, &arr_head, 's');
     push_arr(stack_arr, &arr_head, 'o');
     push_arr(stack_arr, &arr_head, 'e');
     print_arr(stack_arr, arr_head);
